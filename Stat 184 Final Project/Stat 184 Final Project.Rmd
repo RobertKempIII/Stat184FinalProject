@@ -1,0 +1,193 @@
+---
+title: "Stat 184 Final Project"
+output: html_notebook
+---
+
+## Front Matter
+
+```{r}
+# clean up workspace environment
+rm(list = ls())
+
+# all packages used for the assignment
+library(mosaic)
+library(tidyverse)
+library(DataComputing)
+library(mosaicData)
+library(ggplot2)
+
+```
+
+### Guiding Question
+
+Are higher salaries associated with better performance for NFL quarterbacks?
+
+### Become Acquainted with Data Source
+
+This is a data source from Kaggle, containing 5523 cases of NFL player salary data. This was published by "Dr. Hax" and was most recently updated about 10 months ago (around June of 2019). This data is important for the business side of the NFL. I plan mainly to use the average annual salary variable, but I could also use some of the other variables such as the total salary, total guaranteed salary, and fully guaranteed salary variables.  
+
+```{r}
+NFL_Salaries <- read.csv("~/R/Stat184FinalProject/Stat 184 Final Project/KaggleFootballSalaries.csv", header = TRUE)
+
+head(NFL_Salaries)
+dim(NFL_Salaries)
+tail(NFL_Salaries)
+glimpse(NFL_Salaries)
+str(NFL_Salaries)
+
+```
+
+### Explore Intuition Related to Guiding Question
+
+```{r}
+favstats(~ avg_year, data = NFL_Salaries)
+
+```
+
+```{r}
+NFL_Salaries %>%
+  ggplot(aes(x = avg_year)) + geom_density() + geom_rug() + xlab("Average Yearly Salary ($)")
+
+```
+
+The above graph shows that a very large amount of the players receive a very small average yearly salary in comparison to the fewer amount of players who are paid much larger amounts. I knew there was a drastic difference between the highest salaries and the lowest, but this graph really surprises me with how well it puts the idea into perspective. Only the very best can make it all the way to the top.
+
+### Become Acquainted with Data Source
+
+This is a data source from ESPN, containing 50 cases of NFL quarterback statistics in the most recent regular season (2019). This data tells more of a story about how well the players performed in the most recent season, and I will use this data to compare with their salaries and see if the players matched up to their pay grade. I will mainly use the touchdowns, total yards, average yards per game, QBR, and rating variables for their positive performances, but it may be important to take the interception variable into account as well. 
+
+```{r}
+library("rvest")
+
+```
+
+```{r}
+url <- "https://www.espn.com/nfl/stats/player/_/table/passing/sort/passingYards/dir/desc"
+
+PlayerStats <- url %>%
+  read_html(header = TRUE) %>%
+  html_nodes(css = "table") %>%
+  html_table(fill = TRUE)
+
+PlayerStats[[1]]
+
+PlayerStats[[2]]
+
+PassingRaw <- PlayerStats[[2]]
+
+PassingStats <- 
+  bind_cols(PlayerStats[[1]], PlayerStats[[2]]) %>%
+  rename(name = Name, position = POS, games_played = GP, completions = CMP, attempts = ATT, completion_pct = "CMP%", total_yds = YDS, avg_yds = AVG, yds_per_game = "YDS/G", longest = LNG, touchdowns = TD, interceptions = INT, sacks_taken = SACK, sack_yds_lost = SYL, QBR = QBR, rating = RTG)
+
+PassingStats
+
+PassingStats$total_yds <- as.numeric(gsub('[,]', '', PassingStats$total_yds))
+
+PassingStats
+
+```
+
+```{r}
+head(PassingStats)
+dim(PassingStats)
+tail(PassingStats)
+glimpse(PassingStats)
+str(PassingStats)
+
+```
+
+### Explore Intuition Related to Guiding Question
+
+```{r}
+favstats(~ touchdowns, data = PassingStats)
+favstats(~ total_yds, data = PassingStats)
+
+```
+
+```{r}
+PassingStats %>%
+  ggplot(aes(x = interceptions)) + geom_density() + geom_rug()
+
+```
+
+The above graph shows a fairly spread out depiction of the number of interceptions thrown over the year. The density plot shows that the most frequent amount of interceptions thrown for the year was less than 10, but this accounts for injuries and quarterbacks getting benched over the course of the year as well. With 32 NFL teams and 50 quarterbacks in the data set, this density plot was bound to be pushed to the left at least slightly. 
+
+```{r}
+PassingStats %>%
+  ggplot(aes(x = touchdowns, y = total_yds)) + geom_point() + geom_smooth()
+
+```
+
+The above graph shows me that the total yards and number of touchdowns for quarterbacks in the 2019 NFL season have a fairly strong positive correlation. However, this relationship isn't exactly linear, as it tails off at the higher end. This could happen for multiple reasons, but my preliminary guess would be that the number of touchdowns has more variability than the number of yards thrown for in a season. This is shown by the smoother, as the confidence band gets significantly wider at the higher end of the data. This makes sense because yards should accumulate over the season to the typical average for the player, while touchdown numbers could fluctuate per season depending on other factors such as percent of time in the redzone and etc. 
+
+```{r}
+PassingStats %>%
+  ggplot(aes(x = interceptions, y = total_yds)) + geom_point() + geom_smooth()
+
+```
+
+This graph shows me that there is a slight positive relationship between interceptions and total yards thrown for in a season. This relationship isn't as drastic as the one above, telling me that interceptions may have more to do with decision making rather than the circumstances that touchdowns have to do with. However, the positive relationship still makes sense because with more total yards you most likely have taken more attempts as well, giving more chances for interceptions to be thrown. There may be one outlier on the far right that is pulling the line of best fit downwards, as Jameis Winston threw a historically high number of interceptions (well above the second most interceptions last season).
+
+```{r}
+PassingStats %>%
+  filter(interceptions > 29)
+
+```
+
+After following this past NFL season fairly closely, I know that this number of interceptions is legitimate. For this reason, I will not remove the possible outlier.
+
+### Using both Data Sources
+
+The first thing I have noticed that may become a problem is the fact that the "name" variable for the two data sets contain different information. In the NFL_Salaries data table, the name is just the first and last name of the player. However, the name column in the PlayerStats data table contains their first and last name and their team's abbreviation. Before joining these two tables, I need to figure out how to split the team abbreviation from the name and create a separate variable for the team abbreviation. This would allow me to then join the two tables by the player names I am looking for. 
+
+### Joining the two tables
+
+```{r}
+PassingStats <- PassingStats %>%
+  tidyr::extract(col = name, into = "team", regex = "([QWERTYUIOPASDFGHJKLZXCVBNM][QWERTYUIOPASDFGHJKLZXCVBNM].$|[QWERTYUIOPASDFGHJKLZXCVBNM][QWERTYUIOPASDFGHJKLZXCVBNM]$)", remove = FALSE)
+
+PassingStats
+```  
+
+```{r}
+PassingStats <- PassingStats %>%
+  tidyr::extract(col = name, into = "player", regex = "([QWERTYUIOPASDFGHJKLZXCVBNM][qwertyuiopasdfghjklzxcvbnm]+ [QWERTYUIOPASDFGHJKLZXCVBNM][qwertyuiopasdfghjklzxcvbnm]+)")
+
+PassingStats
+
+```
+```{r}
+PassingStats$player[29] = "Matt Stafford"
+
+PassingStats$player
+
+```
+
+```{r}
+Complete_Table <- PassingStats %>%
+  left_join(NFL_Salaries, by = c("player" = "player")) %>%
+  filter(position.y == "quarterback")
+
+Complete_Table
+```
+ 
+Note that Matt Moore was dropped from the data set once the table were joined, due to the fact that he did not have any data in the NFL_Salaries data table. This makes sense because he recently came out of retirement to join the Kansas City Cheifs. He wasn't the main starter this season for the Chiefs anyways, so this is okay. 
+ 
+### Further Data Analysis
+
+```{r}
+Complete_Table %>%
+  group_by(team.x) %>%
+  summarise(total_tds = sum(touchdowns), total_ints = sum(interceptions), avg_salary = mean(avg_year))
+
+```
+
+... complete idea here with graph (mention KC numbers a little deflated due to loss of Matt Moore) ...
+
+... also figure out a way to use spread/gather here ...
+
+... add in 3-variable graph here (sort by 2 quantitative and then color by team or something like that) ...
+
+... add in text comments about each graph/part and their significance ...
+
+

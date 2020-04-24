@@ -191,11 +191,16 @@ Grouped_Complete_Table %>%
 
 The above graph shows a 3-variable scatterplot in which the x-axis has the total yards, the y-axis has the average salary, and the points are labeled by the team name. The quarterbacks are grouped by team, so all 32 teams are respresented but the data may contained the total information for two or more quarterbacks (due to injuries, benchings, etc.). I then added a line of best fit to show whether teams seemed to be overpaying or underpaying their quarterbacks based on the average for their performance level (total yards in the season). As you can see, teams like GB and SEA seem to have paid much more for there quarterbacks at a similar amount of total yards, but those two teams did in fact make the playoffs this past season. On the other hand, teams like TB and DAL seem to have paid very little for their quarterbacks that provided a much higher amount of total yards, but these two teams missed the playoffs this past season. This shows that yardage numbers are not the only factor that goes into good quarterback play; the quarterback must also elevate the team around him because football is a team game. 
 
+```{r}
+Rich_Quarterback <- lm(avg_year >= 20000000 ~ age + QBR + completion_pct + touchdowns + interceptions, data = Complete_Table)
+
+summary(Rich_Quarterback)
+
+```
+
+Here I am using machine learning to create a linear model. This model tells me that the age variable is significant at the 5% significance level, and the touchdowns variable is significant at the 10% significance level in predicting if a quarterback's yearly salary is over $20,000,000. The age variable definitely makes sense, because young quarterbacks who were recently drafted are not qualified to be paid large amounts of money until they spend at least 4 years in the league. I am a little surprised that QBR isn't significant because that is the newest rating system in which quarterback play is graded (on a 100 point scale), so clearly the new method still isn't perfect. 
+
 ... complete idea here with graph (mention KC numbers a little deflated due to loss of Matt Moore) ...
-
-... also figure out a way to use spread/gather here ...
-
-... add in 3-variable graph here (sort by 2 quantitative and then color by team or something like that) ...
 
 ... add in text comments about each graph/part and their significance ...
 

@@ -24,7 +24,7 @@ Are higher salaries associated with better performance for NFL quarterbacks?
 
 ### Become Acquainted with Data Source
 
-This is a data source from Kaggle, containing 5523 cases of NFL player salary data. This was published by "Dr. Hax" and was most recently updated about 10 months ago (around June of 2019). This data is important for the business side of the NFL. I plan mainly to use the average annual salary variable, but I could also use some of the other variables such as the total salary, total guaranteed salary, and fully guaranteed salary variables.  
+This is a data source from Kaggle, containing 5,523 cases of NFL player salary data. This was published by "Dr. Hax" and was most recently updated about 10 months ago (around June of 2019). This data is important for the business side of the NFL. I plan mainly to use the average annual salary variable, but I could also use some of the other variables such as the total salary, total guaranteed salary, and fully guaranteed salary variables.  
 
 ```{r}
 NFL_Salaries <- read.csv("~/R/Stat184FinalProject/Stat 184 Final Project/KaggleFootballSalaries.csv", header = TRUE)
@@ -171,7 +171,7 @@ Complete_Table <- PassingStats %>%
 Complete_Table
 ```
  
-Note that Matt Moore was dropped from the data set once the table were joined, due to the fact that he did not have any data in the NFL_Salaries data table. This makes sense because he recently came out of retirement to join the Kansas City Cheifs. He wasn't the main starter this season for the Chiefs anyways, so this is okay. 
+Note that Matt Moore was dropped from the data set once the tables were joined, due to the fact that he did not have any data in the NFL_Salaries data table. This makes sense because he recently came out of retirement to join the Kansas City Cheifs. He wasn't the main starter this season for the Chiefs anyways, so this is okay. 
  
 ### Further Data Analysis
 
@@ -185,11 +185,11 @@ Grouped_Complete_Table
 
 ```{r}
 Grouped_Complete_Table %>%
-  ggplot(aes(x = total_yards, y = avg_salary)) +  geom_text(aes(label = team.x)) + geom_smooth(method = lm, se = FALSE)
+  ggplot(aes(x = total_yards, y = avg_salary)) +  geom_text(aes(label = team.x, color = team.x)) + geom_smooth(method = lm, se = FALSE)
 
 ```
 
-The above graph shows a 3-variable scatterplot in which the x-axis has the total yards, the y-axis has the average salary, and the points are labeled by the team name. The quarterbacks are grouped by team, so all 32 teams are respresented but the data may contained the total information for two or more quarterbacks (due to injuries, benchings, etc.). I then added a line of best fit to show whether teams seemed to be overpaying or underpaying their quarterbacks based on the average for their performance level (total yards in the season). As you can see, teams like GB and SEA seem to have paid much more for there quarterbacks at a similar amount of total yards, but those two teams did in fact make the playoffs this past season. On the other hand, teams like TB and DAL seem to have paid very little for their quarterbacks that provided a much higher amount of total yards, but these two teams missed the playoffs this past season. This shows that yardage numbers are not the only factor that goes into good quarterback play; the quarterback must also elevate the team around him because football is a team game. 
+The above graph shows a 3-variable scatterplot in which the x-axis has the total yards, the y-axis has the average salary, and the points are labeled and colored by the team name. The quarterbacks are grouped by team, so all 32 teams are respresented, but the data may contain the total information for two or more quarterbacks (due to injuries, benchings, etc.). I then added a line of best fit to show whether teams seemed to be overpaying or underpaying their quarterbacks based on the average for their performance level (total yards in the season). As you can see, teams like GB and SEA seem to have paid much more for their quarterbacks at a similar amount of total yards, but those two teams did in fact make the playoffs this past season. On the other hand, teams like TB and DAL seem to have paid very little for their quarterbacks that provided a much higher amount of total yards, but these two teams missed the playoffs this past season. This shows that yardage numbers are not the only factor that goes into good quarterback play; the quarterback must also elevate the team around him because football is a team sport. 
 
 ```{r}
 Rich_Quarterback <- lm(avg_year >= 20000000 ~ age + QBR + completion_pct + touchdowns + interceptions, data = Complete_Table)
@@ -198,10 +198,7 @@ summary(Rich_Quarterback)
 
 ```
 
-Here I am using machine learning to create a linear model. This model tells me that the age variable is significant at the 5% significance level, and the touchdowns variable is significant at the 10% significance level in predicting if a quarterback's yearly salary is over $20,000,000. The age variable definitely makes sense, because young quarterbacks who were recently drafted are not qualified to be paid large amounts of money until they spend at least 4 years in the league. I am a little surprised that QBR isn't significant because that is the newest rating system in which quarterback play is graded (on a 100 point scale), so clearly the new method still isn't perfect. 
+Here I am using machine learning to create a linear model. This model tells me that the age variable is significant at the 5% significance level, and the touchdowns variable is significant at the 10% significance level in predicting if a quarterback's yearly salary is over $20,000,000. The age variable definitely makes sense, because young quarterbacks who were recently drafted are not qualified to be paid large amounts of money until they spend at least 4 years in the league. I am a little surprised that QBR isn't significant because that is the newest rating system in which quarterback play is graded (on a 100 point scale), so clearly the new method still isn't perfect. Of the quantitative variables (that have to do with performance, so not including age) selected for the model, touchdowns seem to be the best predictor of the bunch in order to predict average yearly salary for quarterbacks in the NFL today. However, this was still not significant at the 5% level, so we are not as certain as we would like that this variable is a great predictor. 
 
-... complete idea here with graph (mention KC numbers a little deflated due to loss of Matt Moore) ...
-
-... add in text comments about each graph/part and their significance ...
-
+In conclusion, many factors go into the decision for what to pay quarterbacks in the NFL today. As the years go on and inflation continues to drive prices up, quarterbacks are going to continue to make more and more money each free agency period. Agents are great at their jobs and they know how to get their guys to be paid like top tier quarterbacks, even though they may not be the best guy out there. With all of this being said, along with the analyses shown above, quarterbacks are generally paid according to their performance although it is not an exact science. The best way to win in today's world is to pay your supporting cast while your quarterback is still young and on his rookie contract, as shown by the current Super Bowl champion Kansas City Chiefs. 
 
